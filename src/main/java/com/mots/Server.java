@@ -1,6 +1,8 @@
 package com.mots;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -65,6 +67,16 @@ public class Server {
         }).start();
     }
 
+    public static byte[] concat(byte[] first, byte[] second) {
+        if (first == null || second == null) {
+            throw new IllegalArgumentException("The Argument can not be null!");
+        }
+        byte[] c = new byte[first.length + second.length];
+        System.arraycopy(first, 0, c, 0, first.length);
+        System.arraycopy(second, 0, c, first.length, second.length);
+        return c;
+    }
+
     private static void startReadingThreadForEachApp(Socket app) {
         new Thread(() -> {
             try {
@@ -72,12 +84,13 @@ public class Server {
                     InputStream inputStream = app.getInputStream();
                     byte[] receiveBuf = new byte[1024];
                     int size = 0;
-                    while ((size = inputStream.read(receiveBuf))!= -1) {
+                    while ((size = inputStream.read(receiveBuf)) != -1) {
                         System.out.println(new String(receiveBuf, 0, size));
                     }
                     Thread.sleep(100);
                 }
             } catch (Exception e) {
+                apps.remove(app);
                 e.printStackTrace();
             }
         }).start();
